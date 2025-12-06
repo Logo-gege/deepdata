@@ -33,9 +33,58 @@
   }
 }
 </script>
+<!-- Babel for on-the-fly compilation -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <script type="text/javascript">
+      // Loader to handle TSX imports in browser without build step
+      async function transformAndRun() {
+        const blobCache = {};
+
+        async function loadModule(path, baseUrl) {
+          const fullUrl = new URL(path, baseUrl || window.location.href).href;
+          
+          if (blobCache[fullUrl]) return blobCache[fullUrl];
+
+          const res = await fetch(fullUrl);
+          if (!res.ok) throw new Error(`Failed to load ${fullUrl}`);
+          let code = await res.text();
+
+          // Regex to find relative imports (starting with ./ or ../)
+          const relativeImportRegex = /from\s+['"](\.[^'"]+)['"]/g;
+          const matches = [...code.matchAll(relativeImportRegex)];
+
+          for (const match of matches) {
+            const importPath = match[1];
+            const resolvedBlobUrl = await loadModule(importPath, fullUrl);
+            // Replace the relative path with the blob URL in the code
+            code = code.split(`'${importPath}'`).join(`'${resolvedBlobUrl}'`);
+            code = code.split(`"${importPath}"`).join(`"${resolvedBlobUrl}"`);
+          }
+
+          // Transform with Babel
+          const transformed = Babel.transform(code, {
+            presets: ['react', ['typescript', { isTSX: true, allExtensions: true }]],
+            filename: fullUrl,
+          }).code;
+
+          const blob = new Blob([transformed], { type: 'text/javascript' });
+          const blobUrl = URL.createObjectURL(blob);
+          blobCache[fullUrl] = blobUrl;
+          return blobUrl;
+        }
+
+        try {
+          const entryUrl = await loadModule('./index.tsx');
+          import(entryUrl);
+        } catch (e) {
+          console.error("Failed to bootstrap application:", e);
+        }
+      }
+      
+      transformAndRun();
+    </script>
   </body>
 </html>

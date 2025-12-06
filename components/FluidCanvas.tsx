@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { THEME } from '../types';
+import { THEME } from '../types.ts';
 
 // --- ENVIRONMENT SHADERS ---
 const snowVertexShader = `

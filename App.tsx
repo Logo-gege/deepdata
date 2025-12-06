@@ -1,5 +1,5 @@
 import React from 'react';
-import FluidCanvas from './components/FluidCanvas';
+import FluidCanvas from './components/FluidCanvas.tsx';
 import { ArrowUpRight, Plus, Minus } from 'lucide-react';
 
 function App() {
