@@ -15,7 +15,8 @@ function App() {
           <span className="text-[10px] md:text-[12px] font-mono tracking-[0.2em] text-white/40 mb-2">
             FIG. 01 — INTELLIGENCE
           </span>
-          <h1 className="text-[15vw] leading-[0.8] font-bold tracking-tighter text-white mix-blend-exclusion -translate-x-[20px]">
+          {/* Removed negative translate to align strictly with the grid/padding line */}
+          <h1 className="text-[15vw] leading-[0.8] font-bold tracking-tighter text-white mix-blend-exclusion">
             DEEP
           </h1>
         </div>
@@ -52,7 +53,8 @@ function App() {
 
       {/* --- CORNER 4: BOTTOM LEFT (Credits / EnzoKing) --- */}
       <div className="fixed bottom-0 left-0 p-8 md:p-16 z-30 pointer-events-auto">
-         <div className="group cursor-default flex flex-col gap-4">
+         {/* Added items-start to ensure left alignment matches the top-left block */}
+         <div className="group cursor-default flex flex-col items-start gap-4">
             
             {/* Technical Divider */}
             <div className="flex items-center gap-2">
@@ -60,7 +62,7 @@ function App() {
                <div className="h-[1px] w-12 bg-white/20"></div>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col items-start">
                <span className="text-[9px] font-mono tracking-[0.3em] text-white/40 uppercase mb-1 group-hover:text-emerald-500/80 transition-colors duration-300">
                   Design by
                </span>
