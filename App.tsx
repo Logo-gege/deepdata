@@ -15,7 +15,7 @@ function App() {
           <span className="text-[10px] md:text-[12px] font-mono tracking-[0.2em] text-white/40 mb-2">
             FIG. 01 — INTELLIGENCE
           </span>
-          <h1 className="text-[15vw] leading-[0.8] font-bold tracking-tighter text-white mix-blend-exclusion">
+          <h1 className="text-[15vw] leading-[0.8] font-bold tracking-tighter text-white mix-blend-exclusion -translate-x-[20px]">
             DEEP
           </h1>
         </div>
