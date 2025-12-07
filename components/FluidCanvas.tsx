@@ -2,6 +2,10 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { THEME } from '../types.ts';
 
+interface Props {
+  isMuted: boolean;
+}
+
 // --- ENVIRONMENT SHADERS ---
 const snowVertexShader = `
   uniform float uTime;
@@ -373,7 +377,7 @@ const bubbleFragmentShader = `
   }
 `;
 
-const FluidCanvas: React.FC = () => {
+const FluidCanvas: React.FC<Props> = ({ isMuted }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -406,6 +410,7 @@ const FluidCanvas: React.FC = () => {
   // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
   const ambienceGainRef = useRef<GainNode | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
 
   // 1. Snow Geometry (Ambient Particles)
   const snowGeometry = useMemo(() => {
@@ -665,6 +670,27 @@ const FluidCanvas: React.FC = () => {
     return geom;
   }, []);
 
+  // Handle Mute State Changes smoothly
+  useEffect(() => {
+    if (!audioContextRef.current || !masterGainRef.current) return;
+    
+    const ctx = audioContextRef.current;
+    const gain = masterGainRef.current;
+    const now = ctx.currentTime;
+    
+    // Ensure context is running if we are unmuting
+    if (!isMuted && ctx.state === 'suspended') {
+      ctx.resume().catch(e => console.warn(e));
+    }
+
+    // Ramp volume
+    const targetGain = isMuted ? 0 : 0.3;
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.linearRampToValueAtTime(targetGain, now + 0.5); // Smooth 0.5s transition
+    
+  }, [isMuted]);
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -677,6 +703,7 @@ const FluidCanvas: React.FC = () => {
         const masterGain = ctx.createGain();
         masterGain.gain.value = 0.3;
         masterGain.connect(ctx.destination);
+        masterGainRef.current = masterGain; // Store ref for mute control
 
         // Brown Noise Generator for Deep Ocean Ambience
         const bufferSize = ctx.sampleRate * 4;
@@ -718,7 +745,7 @@ const FluidCanvas: React.FC = () => {
         
         // Procedural Bubbles / Distant Calls
         const bubbleInterval = setInterval(() => {
-             if (audioContextRef.current && audioContextRef.current.state === 'running') {
+             if (audioContextRef.current && audioContextRef.current.state === 'running' && masterGainRef.current && masterGainRef.current.gain.value > 0) {
                  // Random chance
                  if (Math.random() < 0.3) {
                      // Bubble Sound (High Pitch Sine Burst)
@@ -1086,8 +1113,8 @@ const FluidCanvas: React.FC = () => {
       mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
       
-      // Resume audio on interaction
-      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      // Resume audio on interaction if allowed by props
+      if (!isMuted && audioContextRef.current && audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume();
       }
     };
@@ -1169,7 +1196,7 @@ const FluidCanvas: React.FC = () => {
       if (audioContextRef.current) audioContextRef.current.close();
       if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
     };
-  }, [snowGeometry, schoolGeometry, squidGeometry, trailGeometry, bubbleGeometry, raycaster]);
+  }, [snowGeometry, schoolGeometry, squidGeometry, trailGeometry, bubbleGeometry, raycaster]); // Note: isMuted is NOT here to avoid full re-init
 
   return <div ref={containerRef} className="absolute inset-0 z-0" />;
 };

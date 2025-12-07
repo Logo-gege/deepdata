@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import FluidCanvas from './components/FluidCanvas.tsx';
-import { ArrowUpRight, Plus, Minus } from 'lucide-react';
+import { ArrowUpRight, Plus, Volume2, VolumeX } from 'lucide-react';
 
 function App() {
+  const [isMuted, setIsMuted] = useState(false);
+
   return (
     <div className="w-screen h-screen bg-black text-white overflow-hidden font-sans selection:bg-emerald-500 selection:text-black">
       
       {/* 3D Background */}
-      <FluidCanvas />
+      <FluidCanvas isMuted={isMuted} />
 
       {/* --- CORNER 1: TOP LEFT (Main Title Part 1) --- */}
       <div className="fixed top-0 left-0 p-8 md:p-16 z-20 pointer-events-none select-none">
@@ -36,8 +38,26 @@ function App() {
 
       {/* --- CORNER 3: TOP RIGHT (Navigation) --- */}
       <nav className="fixed top-0 right-0 p-8 md:p-16 z-30 flex flex-col items-end gap-6 pointer-events-auto">
-        <div className="w-8 h-8 flex items-center justify-center border border-white/20 rounded-full mb-4 animate-spin-slow">
-           <Plus className="w-4 h-4 text-white/60" />
+        
+        {/* Status / Controls Row */}
+        <div className="flex items-center gap-4 mb-4">
+          {/* Audio Toggle */}
+          <button 
+            onClick={() => setIsMuted(!isMuted)}
+            className="w-8 h-8 flex items-center justify-center border border-white/20 rounded-full hover:bg-white hover:text-black transition-all duration-300 group"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+          >
+             {isMuted ? (
+               <VolumeX className="w-3 h-3" />
+             ) : (
+               <Volume2 className="w-3 h-3" />
+             )}
+          </button>
+
+          {/* System Status Spinner */}
+          <div className="w-8 h-8 flex items-center justify-center border border-white/20 rounded-full animate-spin-slow cursor-help" title="System Active">
+             <Plus className="w-4 h-4 text-white/60" />
+          </div>
         </div>
         
         {['WORK', 'AGENCY', 'CONTACT'].map((item, i) => (
