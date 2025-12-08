@@ -99,12 +99,6 @@ function App() {
          </div>
       </div>
 
-      {/* --- CENTER DECORATION (Subtle Grid Lines) --- */}
-      <div className="fixed inset-0 pointer-events-none z-10 flex justify-center items-center">
-         <div className="w-[1px] h-full bg-white/5"></div>
-         <div className="h-[1px] w-full bg-white/5 absolute"></div>
-      </div>
-
     </div>
   );
 }
